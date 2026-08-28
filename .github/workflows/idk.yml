@@ -1,0 +1,29 @@
+name: Build Osiris.dll (MSBuild)
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:   # позволяет запускать вручную
+
+jobs:
+  build:
+    runs-on: windows-2022   # можно заменить на windows-2025
+
+    strategy:
+      matrix:
+        configuration: [Release]   # Debug тоже работает, но Release даёт оптимизированную DLL
+        platform: [x64]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v3
+
+      - name: Build Osiris.sln
+        shell: cmd
+        run: |
+          msbuild Osiris.sln /p:Platform=x64 /p:Configuration=Release /p:PlatformToolset=ClangCL
