@@ -1,29 +1,32 @@
-name: Build Osiris.dll (MSBuild)
+name: Build Osiris.dll
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "main" ]
   pull_request:
-    branches: [ "master" ]
-  workflow_dispatch:   # позволяет запускать вручную
+    branches: [ "master", "main" ]
+  workflow_dispatch:  # ручной запуск
 
 jobs:
   build:
-    runs-on: windows-2022   # можно заменить на windows-2025
-
-    strategy:
-      matrix:
-        configuration: [Release]   # Debug тоже работает, но Release даёт оптимизированную DLL
-        platform: [x64]
+    runs-on: windows-2022   # можно windows-2025, но 2022 стабильнее
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v3
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
 
-      - name: Build Osiris.sln
-        shell: cmd
+      - name: Build solution (Release x64)
         run: |
-          msbuild Osiris.sln /p:Platform=x64 /p:Configuration=Release /p:PlatformToolset=ClangCL
+          msbuild Osiris.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143 /m
+
+      - name: Upload DLL as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Osiris-x64-Release
+          path: |
+            x64/Release/Osiris.dll
+            Release/Osiris.dll
+          if-no-files-found: error
